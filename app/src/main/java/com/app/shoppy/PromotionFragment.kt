@@ -6,16 +6,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.app.shoppy.adapter.ProductAdapter
-import com.app.shoppy.data.StyleNestRepository
 import com.app.shoppy.databinding.FragmentPromotionBinding
+import com.app.shoppy.ui.viewmodel.CartViewModel
+import com.app.shoppy.ui.viewmodel.SharedProductViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class PromotionFragment : Fragment() {
     private var _binding: FragmentPromotionBinding? = null
     private val binding get() = _binding!!
-    
-    private lateinit var repository: StyleNestRepository
+
+    private val productViewModel: SharedProductViewModel by activityViewModels()
+    private val cartViewModel: CartViewModel by activityViewModels()
     private lateinit var productAdapter: ProductAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -26,72 +33,72 @@ class PromotionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        repository = StyleNestRepository(requireContext())
         val promoType = arguments?.getString("PROMO_TYPE") ?: "NEW"
 
-        if (promoType == "NEW") {
-            binding.tvPromoTitle.text = "New Arrivals"
-        } else {
-            binding.tvPromoTitle.text = "50% Off Sale"
-        }
+        binding.tvPromoTitle.text = if (promoType == "NEW") "New Arrivals" else "50% Off Sale"
 
-        binding.btnBack.setOnClickListener { 
+        binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
-        val allProducts = repository.getAllProducts()
-        val filteredProducts = if (promoType == "NEW") {
-            allProducts.sortedByDescending { it.id }.take(10)
-        } else {
-            allProducts.filter { it.id % 2 == 0 }
-        }
-
-        if (filteredProducts.isEmpty()) {
-            binding.tvEmptyState.visibility = View.VISIBLE
-            binding.tvEmptyState.text = if (promoType == "NEW") "No new arrivals yet" else "No 50% off items at the moment."
-            binding.rvPromoProducts.visibility = View.GONE
-        } else {
-            binding.tvEmptyState.visibility = View.GONE
-            binding.rvPromoProducts.visibility = View.VISIBLE
-            
-            productAdapter = ProductAdapter(
-                products = filteredProducts,
-                promoType = promoType,
-                onProductClick = { product ->
-                    val intent = android.content.Intent(requireContext(), ProductDetailActivity::class.java)
-                    intent.putExtra("PRODUCT_ID", product.id)
-                    startActivity(intent)
-                },
-                onQuickAddClick = { product ->
-                    val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
-                    val finalPrice = if (promoType == "SALE") product.price * 0.5 else product.price
-                    if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
-                        repository.addToCartWithPrice(product.id, "One Size", 1, finalPrice)
-                        Toast.makeText(requireContext(), "${product.name} added to cart!", Toast.LENGTH_SHORT).show()
-                        (activity as? MainActivity)?.updateBadges()
-                    } else {
-                        android.app.AlertDialog.Builder(requireContext())
-                            .setTitle("Select Size")
-                            .setItems(sizesArray) { _, which ->
-                                val selectedSize = sizesArray[which]
-                                repository.addToCartWithPrice(product.id, selectedSize, 1, finalPrice)
-                                Toast.makeText(requireContext(), "${product.name} (Size: $selectedSize) added to cart!", Toast.LENGTH_SHORT).show()
-                                (activity as? MainActivity)?.updateBadges()
-                            }
-                            .setNegativeButton("Cancel", null)
-                            .show()
-                    }
-                },
-                onFavoriteClick = { product ->
-                    repository.toggleWishlist(product.id)
-                    (activity as? MainActivity)?.updateBadges()
-                },
-                isFavorite = { productId ->
-                    repository.isFavorite(productId)
+        productAdapter = ProductAdapter(
+            products = emptyList(),
+            promoType = promoType,
+            onProductClick = { product ->
+                val intent = android.content.Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("PRODUCT_ID", product.id)
+                startActivity(intent)
+            },
+            onQuickAddClick = { product ->
+                val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
+                val finalPrice = if (promoType == "SALE") product.price * 0.5 else product.price
+                if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
+                    cartViewModel.addToCart(product.id.toLong(), "One Size", 1, finalPrice)
+                    Toast.makeText(requireContext(), "Added to cart!", Toast.LENGTH_SHORT).show()
+                } else {
+                    android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Select Size")
+                        .setItems(sizesArray) { _, which ->
+                            val selectedSize = sizesArray[which]
+                            cartViewModel.addToCart(product.id.toLong(), selectedSize, 1, finalPrice)
+                            Toast.makeText(requireContext(), "Added to cart!", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
                 }
-            )
-            binding.rvPromoProducts.layoutManager = GridLayoutManager(requireContext(), 2)
-            binding.rvPromoProducts.adapter = productAdapter
+            },
+            onFavoriteClick = { product ->
+                productViewModel.toggleWishlist(product.id.toLong())
+            }
+        )
+        binding.rvPromoProducts.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.rvPromoProducts.adapter = productAdapter
+
+        // Observe products and favorites reactively
+        viewLifecycleOwner.lifecycleScope.launch {
+            productViewModel.products.collect { entities ->
+                val all = entities.map { it.toProduct() }
+                val filtered = if (promoType == "NEW") {
+                    all.sortedByDescending { it.id }.take(10)
+                } else {
+                    all.filter { it.id % 2 == 0 }
+                }
+
+                if (filtered.isEmpty()) {
+                    binding.tvEmptyState.visibility = View.VISIBLE
+                    binding.tvEmptyState.text = if (promoType == "NEW") "No new arrivals yet" else "No sale items at the moment."
+                    binding.rvPromoProducts.visibility = View.GONE
+                } else {
+                    binding.tvEmptyState.visibility = View.GONE
+                    binding.rvPromoProducts.visibility = View.VISIBLE
+                    productAdapter.updateProducts(filtered)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            productViewModel.favoriteProductIds.collect { favIds ->
+                productAdapter.updateFavorites(favIds)
+            }
         }
     }
 

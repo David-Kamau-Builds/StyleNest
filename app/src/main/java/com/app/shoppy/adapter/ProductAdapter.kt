@@ -13,10 +13,20 @@ class ProductAdapter(
     private val onProductClick: (Product) -> Unit,
     private val onQuickAddClick: (Product) -> Unit,
     private val onFavoriteClick: (Product) -> Unit,
-    private val isFavorite: (Int) -> Boolean
+    private var favoriteIds: Set<Long> = emptySet()
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     inner class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
+
+    fun updateProducts(newProducts: List<Product>) {
+        this.products = newProducts
+        notifyDataSetChanged()
+    }
+
+    fun updateFavorites(newFavorites: Set<Long>) {
+        this.favoriteIds = newFavorites
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val binding = ItemProductBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -57,7 +67,7 @@ class ProductAdapter(
                 .into(productImage)
             
             // Handle Heart UI State dynamically
-            val isFav = isFavorite(product.id)
+            val isFav = favoriteIds.contains(product.id.toLong())
             if (isFav) {
                 ivFavorite.setColorFilter(android.graphics.Color.RED)
             } else {
@@ -88,3 +98,4 @@ class ProductAdapter(
         notifyItemRangeInserted(startPosition, newProducts.size)
     }
 }
+

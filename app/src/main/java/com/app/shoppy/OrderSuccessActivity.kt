@@ -15,7 +15,11 @@ class OrderSuccessActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val orderNumber = intent.getStringExtra("ORDER_NUMBER") ?: "#ST-UNKNOWN"
+        val totalAmount = intent.getDoubleExtra("TOTAL_AMOUNT", 0.0)
+        val pointsEarned = (totalAmount / 100).toInt()
+        
         binding.tvOrderNumber.text = orderNumber
+        binding.tvPointsEarned.text = "+$pointsEarned Loyalty Points Earned!"
 
         val navigateHome = Runnable {
             android.widget.Toast.makeText(

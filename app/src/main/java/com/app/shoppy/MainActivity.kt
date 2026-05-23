@@ -3,7 +3,6 @@ package com.app.shoppy
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.app.shoppy.data.StyleNestRepository
 import com.app.shoppy.databinding.ActivityMainBinding
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,23 +10,25 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.app.shoppy.utils.NotificationHelper
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.activity.viewModels
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    lateinit var repository: StyleNestRepository
+    private val cartViewModel: com.app.shoppy.ui.viewmodel.CartViewModel by viewModels()
+    private val productViewModel: com.app.shoppy.ui.viewmodel.SharedProductViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        repository = StyleNestRepository(this)
-
-        // Initialize the notification channel here so it's ready when needed
         NotificationHelper.createNotificationChannel(this)
         
-        // Request notification permission if Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -60,45 +61,39 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
-        // Load default fragment on first creation
         if (savedInstanceState == null) {
             binding.bottomNavigation.selectedItemId = R.id.nav_home
         }
+
+        observeBadges()
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        // We could log this or show a message if denied, but usually it's fine to just ignore
+        // Ignored
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateBadges()
+    private fun observeBadges() {
+        lifecycleScope.launch {
+            cartViewModel.cartItems.collect { items ->
+                val cartCount = items.sumOf { it.quantity }
+                val bottomNav = binding.bottomNavigation
+                if (cartCount > 0) {
+                    bottomNav.getOrCreateBadge(R.id.nav_cart).apply {
+                        number = cartCount
+                        backgroundColor = ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark)
+                    }
+                } else {
+                    bottomNav.removeBadge(R.id.nav_cart)
+                }
+            }
+        }
     }
 
     fun updateBadges() {
-        val cartCount = repository.getCartCount()
-        if (cartCount > 0) {
-            val badge = binding.bottomNavigation.getOrCreateBadge(R.id.nav_cart)
-            badge.number = cartCount
-            badge.backgroundColor = getColor(R.color.gold)
-            badge.badgeTextColor = getColor(android.R.color.black)
-            badge.isVisible = true
-        } else {
-            binding.bottomNavigation.removeBadge(R.id.nav_cart)
-        }
-
-        val wishlistCount = repository.getWishlistCount()
-        if (wishlistCount > 0) {
-            val badge = binding.bottomNavigation.getOrCreateBadge(R.id.nav_wishlist)
-            badge.number = wishlistCount
-            badge.backgroundColor = getColor(android.R.color.holo_red_dark)
-            badge.badgeTextColor = getColor(android.R.color.white)
-            badge.isVisible = true
-        } else {
-            binding.bottomNavigation.removeBadge(R.id.nav_wishlist)
-        }
+        // Kept for backwards compatibility with un-refactored fragments.
+        // It's empty now because we use observeBadges() which updates reactively.
     }
 
     private fun loadFragment(fragment: Fragment) {
@@ -107,3 +102,4 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 }
+

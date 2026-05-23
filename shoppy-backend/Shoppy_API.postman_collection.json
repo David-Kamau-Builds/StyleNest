@@ -1,0 +1,426 @@
+{
+  "info": {
+    "name": "Shoppy API",
+    "_postman_id": "shoppy-api-collection",
+    "description": "Comprehensive API collection for the Shoppy e-commerce backend. Base URL: http://localhost:8080/api/v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "userEmail",
+      "value": "testuser@shoppy.com",
+      "type": "string"
+    },
+    {
+      "key": "orderNumber",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@shoppy.com\",\n  \"password\": \"Password@123\",\n  \"avatarUrl\": null,\n  \"twoFactorEnabled\": false\n}"
+            },
+            "description": "Register a new user account. Password is stored in plain text in this demo – in production, hash with BCrypt."
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.email) {",
+                  "  pm.collectionVariables.set('userEmail', res.email);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/login?email={{userEmail}}&password=Password@123",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "login"],
+              "query": [
+                { "key": "email", "value": "{{userEmail}}" },
+                { "key": "password", "value": "Password@123" }
+              ]
+            },
+            "description": "Login with email and password. Returns full user profile including loyaltyPoints and twoFactorEnabled."
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userEmail}}"]
+            },
+            "description": "Fetch the full profile of a user by email, including loyalty points."
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userEmail}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"avatarUrl\": \"https://example.com/avatar.png\",\n  \"twoFactorEnabled\": true\n}"
+            },
+            "description": "Update user profile fields. Only provided fields are updated (null fields are ignored). Used to toggle 2FA and update name/avatar."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛍️ Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Returns the full list of all products seeded in the database."
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "1"]
+            },
+            "description": "Fetch a single product by its numeric ID."
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/search?q=shirt",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "search"],
+              "query": [
+                { "key": "q", "value": "shirt", "description": "Search term" }
+              ]
+            },
+            "description": "Search products by name or description using a keyword query."
+          }
+        },
+        {
+          "name": "Filter Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/filter?category=Shirts&minPrice=500&maxPrice=3000",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "filter"],
+              "query": [
+                { "key": "category", "value": "Shirts" },
+                { "key": "minPrice", "value": "500" },
+                { "key": "maxPrice", "value": "3000" }
+              ]
+            },
+            "description": "Filter products by category and/or price range. Any parameter can be omitted."
+          }
+        },
+        {
+          "name": "Get Recommendations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/1/recommendations",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "1", "recommendations"]
+            },
+            "description": "Returns a list of recommended products based on the same category as the given product ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.orderNumber) {",
+                  "  pm.collectionVariables.set('orderNumber', res.orderNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"testuser@shoppy.com\",\n  \"customerName\": \"Test User\",\n  \"phone\": \"+254712345678\",\n  \"deliveryAddress\": \"123 Nairobi CBD, Nairobi, Kenya\",\n  \"paymentMethod\": \"M-Pesa\",\n  \"totalAmount\": 2500.00,\n  \"orderDate\": \"2026-05-23\",\n  \"orderItems\": [\n    {\n      \"productId\": 1,\n      \"size\": \"M\",\n      \"quantity\": 2,\n      \"price\": 1250.00\n    }\n  ]\n}"
+            },
+            "description": "Place a new order. Automatically sets status to 'Pending Delivery' and awards loyalty points (1 point per KSh 100 spent)."
+          }
+        },
+        {
+          "name": "Get Orders by User Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/user/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "user", "{{userEmail}}"]
+            },
+            "description": "Fetch all orders for a specific user, ordered by ID descending (most recent first)."
+          }
+        },
+        {
+          "name": "Get Order by Order Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderNumber}}"]
+            },
+            "description": "Fetch a specific order by its unique order number (e.g. ORD-12345). Auto-populated after 'Create Order'."
+          }
+        },
+        {
+          "name": "Update Order Status (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderNumber}}/status?status=Shipped",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderNumber}}", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Shipped",
+                  "description": "Options: Pending Delivery, Processing, Shipped, Delivered"
+                }
+              ]
+            },
+            "description": "Admin endpoint to update order tracking status. Valid values: 'Pending Delivery', 'Processing', 'Shipped', 'Delivered'."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Cart",
+      "item": [
+        {
+          "name": "Get Cart Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userEmail}}"]
+            },
+            "description": "Fetch all cart items for a given user email."
+          }
+        },
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"testuser@shoppy.com\",\n  \"productId\": 1,\n  \"selectedSize\": \"M\",\n  \"quantity\": 1,\n  \"price\": 1250.00\n}"
+            },
+            "description": "Add a product to the user's cart. If the same product+size already exists, the quantity is incremented."
+          }
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "1"]
+            },
+            "description": "Delete a specific cart item by its ID."
+          }
+        },
+        {
+          "name": "Clear Cart (After Checkout)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/user/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "user", "{{userEmail}}"]
+            },
+            "description": "Clears all cart items for a user. Called after a successful order is placed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "❤️ Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wishlist/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlist", "{{userEmail}}"]
+            },
+            "description": "Fetch all wishlist items for a user."
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wishlist",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlist"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"testuser@shoppy.com\",\n  \"productId\": 1\n}"
+            },
+            "description": "Add a product to the user's wishlist."
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wishlist/{{userEmail}}/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlist", "{{userEmail}}", "1"]
+            },
+            "description": "Remove a product from the user's wishlist by userEmail and productId."
+          }
+        }
+      ]
+    },
+    {
+      "name": "⭐ Reviews",
+      "item": [
+        {
+          "name": "Get Reviews for Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/product/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "product", "1"]
+            },
+            "description": "Fetch all reviews for a specific product ID."
+          }
+        },
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": 1,\n  \"userEmail\": \"testuser@shoppy.com\",\n  \"userName\": \"Test User\",\n  \"rating\": 5,\n  \"comment\": \"Absolutely love this product! Great quality and fast delivery.\"\n}"
+            },
+            "description": "Submit a product review. Rating must be between 1 and 5. Date is set automatically by the backend."
+          }
+        }
+      ]
+    }
+  ]
+}

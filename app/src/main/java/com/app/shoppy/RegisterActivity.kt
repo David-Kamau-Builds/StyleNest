@@ -1,26 +1,31 @@
 package com.app.shoppy
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.app.shoppy.databinding.ActivityRegisterBinding
-import com.app.shoppy.data.DatabaseHelper
+import com.app.shoppy.ui.viewmodel.AuthState
+import com.app.shoppy.ui.viewmodel.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var dbHelper: DatabaseHelper
+    private val authViewModel: AuthViewModel by viewModels()
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -31,8 +36,6 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        dbHelper = DatabaseHelper(this)
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
@@ -74,39 +77,24 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val db = dbHelper.writableDatabase
-            
-            // Basic check if email exists
-            val cursor = db.rawQuery("SELECT email FROM users WHERE email=?", arrayOf(email))
-            if (cursor.moveToFirst()) {
-                Toast.makeText(this, "Email is already registered", Toast.LENGTH_SHORT).show()
-                cursor.close()
-                return@setOnClickListener
-            }
-            cursor.close()
+            authViewModel.register(name, email, password)
+        }
 
-            val values = ContentValues().apply {
-                put("name", name)
-                put("email", email)
-                put("password", password)
-                put("avatar_url", "")
-            }
-
-            val newRowId = db.insert("users", null, values)
-            if (newRowId != -1L) {
-                // Save to shared preferences exactly like Google Auth does
-                val sharedPrefs = getSharedPreferences("shoppy_prefs", Context.MODE_PRIVATE)
-                sharedPrefs.edit().apply {
-                    putString("user_name", name)
-                    putString("user_email", email)
-                    putString("user_avatar", "")
-                    putBoolean("is_logged_in", true)
-                    apply()
+        lifecycleScope.launch {
+            authViewModel.authState.collect { state ->
+                when (state) {
+                    is AuthState.Loading -> {
+                        // show loading
+                    }
+                    is AuthState.Success -> {
+                        Toast.makeText(this@RegisterActivity, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                        finish() // Returns to the previous screen (e.g. Profile or wherever launched)
+                    }
+                    is AuthState.Error -> {
+                        Toast.makeText(this@RegisterActivity, state.message, Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
                 }
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
-                finish() // Returns to the previous screen (e.g. Profile or wherever launched)
-            } else {
-                Toast.makeText(this, "Failed to create account", Toast.LENGTH_SHORT).show()
             }
         }
     }

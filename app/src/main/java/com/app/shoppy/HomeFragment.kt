@@ -9,18 +9,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import android.view.inputmethod.EditorInfo
+import com.app.shoppy.ui.viewmodel.SharedProductViewModel
+import com.app.shoppy.ui.viewmodel.CartViewModel
 import androidx.recyclerview.widget.GridLayoutManager
 import com.app.shoppy.adapter.ProductAdapter
-import com.app.shoppy.data.StyleNestRepository
 import com.app.shoppy.databinding.FragmentHomeBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var repository: StyleNestRepository
+    private val productViewModel: SharedProductViewModel by activityViewModels()
+    private val cartViewModel: CartViewModel by activityViewModels()
     private lateinit var productAdapter: ProductAdapter
 
     data class BentoSlide(val title: String, val imageUrl: String)
@@ -44,8 +52,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-        repository = StyleNestRepository(requireContext())
         
         // Load static small bento images
         Glide.with(this)
@@ -84,6 +90,29 @@ class HomeFragment : Fragment() {
 
         startBentoSlideshow()
         setupProducts()
+        setupSearchAndFilter()
+    }
+
+    private fun setupSearchAndFilter() {
+        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = binding.etSearch.text.toString()
+                if (query.isNotEmpty()) {
+                    productViewModel.searchProducts(query)
+                } else {
+                    productViewModel.clearSearchAndFilter()
+                }
+                true
+            } else {
+                false
+            }
+        }
+
+        binding.btnFilter.setOnClickListener {
+            // Show bottom sheet
+            val bottomSheet = FilterBottomSheetFragment()
+            bottomSheet.show(parentFragmentManager, "FilterBottomSheet")
+        }
     }
 
     private fun startBentoSlideshow() {
@@ -125,9 +154,44 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupProducts() {
-        val initialProducts = repository.getFeaturedProducts()
+        viewLifecycleOwner.lifecycleScope.launch {
+            productViewModel.products.collect { entities ->
+                val products = entities.map { it.toProduct() }
+                productAdapter.updateProducts(products)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            productViewModel.favoriteProductIds.collect { favIds ->
+                productAdapter.updateFavorites(favIds)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            productViewModel.searchResults.collect { searchResults ->
+                if (searchResults != null) {
+                    val products = searchResults.map { dto ->
+                        com.app.shoppy.model.Product(
+                            id = dto.id.toInt(),
+                            name = dto.name,
+                            description = dto.description ?: "",
+                            richDescription = dto.richDescription ?: "",
+                            category = dto.category,
+                            subCategory = dto.subCategory ?: "",
+                            sizes = dto.sizes,
+                            price = dto.price,
+                            imageUrl = dto.imageUrl,
+                            images = dto.images ?: dto.imageUrl
+                        )
+                    }
+                    productAdapter.updateProducts(products)
+                } else {
+                    // Fall back to normal products
+                    val products = productViewModel.products.value.map { it.toProduct() }
+                    productAdapter.updateProducts(products)
+                }
+            }
+        }
         productAdapter = ProductAdapter(
-            products = initialProducts,
+            products = emptyList(),
             onProductClick = { product ->
                 val intent = Intent(requireContext(), ProductDetailActivity::class.java)
                 intent.putExtra("PRODUCT_ID", product.id)
@@ -136,28 +200,22 @@ class HomeFragment : Fragment() {
             onQuickAddClick = { product ->
                 val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
                 if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
-                    repository.addToCart(product.id, "One Size", 1)
-                    Toast.makeText(context, "${product.name} added to cart!", Toast.LENGTH_SHORT).show()
-                    (activity as? MainActivity)?.updateBadges()
+                    cartViewModel.addToCart(product.id.toLong(), "One Size", 1, product.price)
+                    Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
                 } else {
                     android.app.AlertDialog.Builder(requireContext())
                         .setTitle("Select Size")
                         .setItems(sizesArray) { _, which ->
                             val selectedSize = sizesArray[which]
-                            repository.addToCart(product.id, selectedSize, 1)
-                            Toast.makeText(context, "${product.name} (Size: $selectedSize) added to cart!", Toast.LENGTH_SHORT).show()
-                            (activity as? MainActivity)?.updateBadges()
+                            cartViewModel.addToCart(product.id.toLong(), selectedSize, 1, product.price)
+                            Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
                         }
                         .setNegativeButton("Cancel", null)
                         .show()
                 }
             },
             onFavoriteClick = { product ->
-                repository.toggleWishlist(product.id)
-                (activity as? MainActivity)?.updateBadges()
-            },
-            isFavorite = { productId ->
-                repository.isFavorite(productId)
+                productViewModel.toggleWishlist(product.id.toLong())
             }
         )
         binding.rvProducts.layoutManager = GridLayoutManager(context, 2)

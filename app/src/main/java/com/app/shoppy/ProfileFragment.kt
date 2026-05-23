@@ -14,19 +14,31 @@ import com.bumptech.glide.Glide
 import com.app.shoppy.utils.UIUtils
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
-import com.app.shoppy.data.DatabaseHelper
-import androidx.biometric.BiometricManager
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.app.shoppy.ui.viewmodel.AuthViewModel
+import com.app.shoppy.ui.viewmodel.AuthState
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-    
+    private val authViewModel: AuthViewModel by viewModels()
+
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             try {
                 Glide.with(this).load(it).placeholder(UIUtils.getShimmerDrawable()).into(binding.imgAvatar)
                 requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
                     .edit().putString("user_avatar", it.toString()).apply()
+                    
+                val email = requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE).getString("user_email", "")
+                if (!email.isNullOrEmpty()) {
+                    val updatedUser = com.app.shoppy.data.remote.model.UserDto(0, "", email, it.toString(), false, 0)
+                    authViewModel.updateProfile(email, updatedUser)
+                }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load image", Toast.LENGTH_SHORT).show()
             }
@@ -43,32 +55,33 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         updateProfileUI()
+        observeViewModel()
 
         binding.imgAvatar.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
-        
+
         binding.btnSignIn.setOnClickListener {
             val intent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(intent)
         }
-        
+
         binding.btnEditProfile.setOnClickListener {
             val sharedPrefs = requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
             val bottomSheetDialog = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
-            val view = layoutInflater.inflate(R.layout.dialog_edit_profile, null)
-            
-            val etName = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfName)
-            val etEmail = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfEmail)
-            val etPhone = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfPhone)
-            val etCountry = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfCountry)
-            val etCity = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfCity)
-            val etDistrict = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfDistrict)
-            val etStreet = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfStreet)
-            val btnSave = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveProfile)
-            
+            val dialogView = layoutInflater.inflate(R.layout.dialog_edit_profile, null)
+
+            val etName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfName)
+            val etEmail = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfEmail)
+            val etPhone = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfPhone)
+            val etCountry = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfCountry)
+            val etCity = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfCity)
+            val etDistrict = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfDistrict)
+            val etStreet = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etProfStreet)
+            val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveProfile)
+
             // Pre-fill
             etName.setText(sharedPrefs.getString("user_name", ""))
             etEmail.setText(sharedPrefs.getString("user_email", ""))
@@ -77,11 +90,11 @@ class ProfileFragment : Fragment() {
             etCity.setText(sharedPrefs.getString("user_city", ""))
             etDistrict.setText(sharedPrefs.getString("user_district", ""))
             etStreet.setText(sharedPrefs.getString("user_street", ""))
-            
+
             btnSave.setOnClickListener {
                 val newName = etName.text.toString()
                 val newEmail = etEmail.text.toString()
-                
+
                 sharedPrefs.edit().apply {
                     putString("user_name", newName)
                     putString("user_email", newEmail)
@@ -92,22 +105,28 @@ class ProfileFragment : Fragment() {
                     putString("user_street", etStreet.text.toString())
                     apply()
                 }
-                
+
                 binding.tvUserName.text = newName.ifBlank { "Guest User" }
                 binding.tvUserEmail.text = newEmail.ifBlank { "guest@stylenest.co.ke" }
                 
+                val email = sharedPrefs.getString("user_email", "")
+                if (!email.isNullOrEmpty()) {
+                    val updatedUser = com.app.shoppy.data.remote.model.UserDto(0, newName, email, null, false, 0)
+                    authViewModel.updateProfile(email, updatedUser)
+                }
+                
                 bottomSheetDialog.dismiss()
-                Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Profile updated!", Toast.LENGTH_SHORT).show()
             }
-            
-            bottomSheetDialog.setContentView(view)
+
+            bottomSheetDialog.setContentView(dialogView)
             bottomSheetDialog.show()
         }
-        
+
         // Setup initial switch state based on current night mode
         val currentNightMode = AppCompatDelegate.getDefaultNightMode()
         val isSystemDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        binding.switchDarkMode.isChecked = currentNightMode == AppCompatDelegate.MODE_NIGHT_YES || 
+        binding.switchDarkMode.isChecked = currentNightMode == AppCompatDelegate.MODE_NIGHT_YES ||
             (currentNightMode == AppCompatDelegate.MODE_NIGHT_UNSPECIFIED && isSystemDark)
 
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
@@ -128,7 +147,7 @@ class ProfileFragment : Fragment() {
                 startActivity(Intent(requireContext(), LoginActivity::class.java))
             }
         }
-        
+
         binding.btnHelpCenter.setOnClickListener {
             Toast.makeText(requireContext(), "Opening Help Center...", Toast.LENGTH_SHORT).show()
         }
@@ -136,7 +155,7 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             val sharedPrefs = requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
             sharedPrefs.edit().clear().apply()
-            
+
             // Also sign out from Google Client
             val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN).build()
             val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(requireActivity(), gso)
@@ -150,8 +169,9 @@ class ProfileFragment : Fragment() {
             val sharedPrefs = requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
             val email = sharedPrefs.getString("user_email", "")
             if (!email.isNullOrEmpty()) {
-                val db = DatabaseHelper(requireContext()).writableDatabase
-                db.execSQL("UPDATE users SET two_factor_enabled=? WHERE email=?", arrayOf(if (isChecked) 1 else 0, email))
+                sharedPrefs.edit().putBoolean("two_factor_enabled", isChecked).apply()
+                val updatedUser = com.app.shoppy.data.remote.model.UserDto(0, "", email, null, isChecked, 0)
+                authViewModel.updateProfile(email, updatedUser)
                 Toast.makeText(requireContext(), if (isChecked) "2FA Enabled" else "2FA Disabled", Toast.LENGTH_SHORT).show()
             }
         }
@@ -161,17 +181,17 @@ class ProfileFragment : Fragment() {
         super.onResume()
         updateProfileUI()
     }
-    
+
     private fun updateProfileUI() {
         if (_binding == null) return
         val sharedPrefs = requireActivity().getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
         val isLoggedIn = sharedPrefs.getBoolean("is_logged_in", false)
-        
+
         val savedName = sharedPrefs.getString("user_name", "") ?: ""
         val savedEmail = sharedPrefs.getString("user_email", "") ?: ""
         binding.tvUserName.text = savedName.ifBlank { "Guest User" }
         binding.tvUserEmail.text = savedEmail.ifBlank { "guest@stylenest.co.ke" }
-        
+
         val savedAvatar = sharedPrefs.getString("user_avatar", "")
         if (!savedAvatar.isNullOrBlank()) {
             Glide.with(this)
@@ -181,34 +201,48 @@ class ProfileFragment : Fragment() {
         } else {
             binding.imgAvatar.setImageResource(android.R.drawable.sym_def_app_icon)
         }
-        
+
         if (isLoggedIn) {
             binding.layoutProfileDetails.visibility = View.VISIBLE
             binding.btnSignIn.visibility = View.GONE
             binding.btnLogout.visibility = View.VISIBLE
-            
-            val biometricManager = BiometricManager.from(requireContext())
-            if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL) == BiometricManager.BIOMETRIC_SUCCESS) {
+
+            // Fetch profile for latest loyalty points
+            if (savedEmail.isNotEmpty()) {
+                authViewModel.fetchUserProfile(savedEmail)
+            }
+
+            val biometricManager = androidx.biometric.BiometricManager.from(requireContext())
+            if (biometricManager.canAuthenticate(
+                    androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS) {
                 binding.layout2fa.visibility = View.VISIBLE
-                
-                // Read current state from DB
+
+                // Read current state from shared prefs
                 if (savedEmail.isNotEmpty()) {
-                    val db = DatabaseHelper(requireContext()).readableDatabase
-                    val cursor = db.rawQuery("SELECT two_factor_enabled FROM users WHERE email=?", arrayOf(savedEmail))
-                    if (cursor.moveToFirst()) {
-                        binding.switch2FA.isChecked = cursor.getInt(0) == 1
-                    }
-                    cursor.close()
+                    binding.switch2FA.isChecked = sharedPrefs.getBoolean("two_factor_enabled", false)
                 }
             } else {
                 binding.layout2fa.visibility = View.GONE
             }
-
         } else {
             binding.layoutProfileDetails.visibility = View.GONE
             binding.btnSignIn.visibility = View.VISIBLE
             binding.btnLogout.visibility = View.GONE
             binding.layout2fa.visibility = View.GONE
+            binding.cardLoyaltyPoints.visibility = View.GONE
+        }
+    }
+
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            authViewModel.authState.collect { state ->
+                if (state is AuthState.Success) {
+                    binding.cardLoyaltyPoints.visibility = View.VISIBLE
+                    binding.tvLoyaltyPoints.text = "${state.user.loyaltyPoints} Points"
+                }
+            }
         }
     }
 
