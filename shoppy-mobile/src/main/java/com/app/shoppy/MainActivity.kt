@@ -96,6 +96,12 @@ class MainActivity : AppCompatActivity() {
         // It's empty now because we use observeBadges() which updates reactively.
     }
 
+    override fun onResume() {
+        super.onResume()
+        cartViewModel.refreshSession()
+        productViewModel.refreshSession()
+    }
+
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)

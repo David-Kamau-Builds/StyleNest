@@ -127,6 +127,23 @@
           }
         },
         {
+          "name": "Get Paginated Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "0", "description": "Page index (0-based)" },
+                { "key": "size", "value": "6", "description": "Items per page" }
+              ]
+            },
+            "description": "Returns a limited, paginated page of products from the database."
+          }
+        },
+        {
           "name": "Get Product by ID",
           "request": {
             "method": "GET",

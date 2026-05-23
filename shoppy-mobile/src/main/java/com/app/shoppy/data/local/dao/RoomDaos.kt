@@ -17,6 +17,9 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(products: List<ProductEntity>)
     
+    @Query("SELECT * FROM products LIMIT :limit OFFSET :offset")
+    suspend fun getPagedProducts(limit: Int, offset: Int): List<ProductEntity>
+
     @Query("DELETE FROM products")
     suspend fun clearAll()
 }

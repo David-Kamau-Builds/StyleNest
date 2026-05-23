@@ -46,6 +46,10 @@ class ShoppyRepository @Inject constructor(
     fun getAllProductsFlow(): Flow<List<ProductEntity>> {
         return productDao.getAllProducts()
     }
+
+    suspend fun getPagedProducts(limit: Int, offset: Int): List<ProductEntity> {
+        return productDao.getPagedProducts(limit, offset)
+    }
     
     // Wishlist
     fun getWishlistItemsFlow(email: String): Flow<List<com.app.shoppy.data.local.entity.WishlistEntity>> {

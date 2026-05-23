@@ -154,8 +154,63 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupProducts() {
+        productAdapter = ProductAdapter(
+            products = emptyList(),
+            onProductClick = { product ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("PRODUCT_ID", product.id)
+                startActivity(intent)
+            },
+            onQuickAddClick = { product ->
+                if (!cartViewModel.isLoggedIn()) {
+                    Toast.makeText(context, "Please sign in to add items to your cart", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), LoginActivity::class.java))
+                    return@ProductAdapter
+                }
+                val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
+                if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
+                    cartViewModel.addToCart(product.id.toLong(), "One Size", 1, product.price)
+                    Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
+                } else {
+                    android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Select Size")
+                        .setItems(sizesArray) { _, which ->
+                            val selectedSize = sizesArray[which]
+                            cartViewModel.addToCart(product.id.toLong(), selectedSize, 1, product.price)
+                            Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+            },
+            onFavoriteClick = { product ->
+                if (!productViewModel.isLoggedIn()) {
+                    Toast.makeText(context, "Please sign in to add items to your wishlist", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), LoginActivity::class.java))
+                    return@ProductAdapter
+                }
+                productViewModel.toggleWishlist(product.id.toLong())
+            }
+        )
+        binding.rvProducts.layoutManager = GridLayoutManager(context, 2)
+        binding.rvProducts.adapter = productAdapter
+
+        binding.rvProducts.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 2 && firstVisibleItemPosition >= 0) {
+                    productViewModel.loadNextPage()
+                }
+            }
+        })
+
         viewLifecycleOwner.lifecycleScope.launch {
-            productViewModel.products.collect { entities ->
+            productViewModel.pagedProducts.collect { entities ->
                 val products = entities.map { it.toProduct() }
                 productAdapter.updateProducts(products)
             }
@@ -190,36 +245,6 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        productAdapter = ProductAdapter(
-            products = emptyList(),
-            onProductClick = { product ->
-                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-                intent.putExtra("PRODUCT_ID", product.id)
-                startActivity(intent)
-            },
-            onQuickAddClick = { product ->
-                val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
-                if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
-                    cartViewModel.addToCart(product.id.toLong(), "One Size", 1, product.price)
-                    Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
-                } else {
-                    android.app.AlertDialog.Builder(requireContext())
-                        .setTitle("Select Size")
-                        .setItems(sizesArray) { _, which ->
-                            val selectedSize = sizesArray[which]
-                            cartViewModel.addToCart(product.id.toLong(), selectedSize, 1, product.price)
-                            Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show()
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                }
-            },
-            onFavoriteClick = { product ->
-                productViewModel.toggleWishlist(product.id.toLong())
-            }
-        )
-        binding.rvProducts.layoutManager = GridLayoutManager(context, 2)
-        binding.rvProducts.adapter = productAdapter
     }
 
     override fun onDestroyView() {

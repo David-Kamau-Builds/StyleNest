@@ -49,3 +49,17 @@ variable "db_name" {
   type        = string
   default     = "shoppy_db"
 }
+
+variable "github_token" {
+  description = "GitHub Personal Access Token (PAT) for cloning a private repository"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "github_branch" {
+  description = "Branch of the GitHub repository to clone and build"
+  type        = string
+  default     = "main"
+}
+

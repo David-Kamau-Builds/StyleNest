@@ -11,15 +11,29 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
 @HiltViewModel
 class CartViewModel @Inject constructor(
     private val repository: ShoppyRepository,
-    sessionManager: SessionManager
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val userEmail = sessionManager.getUserEmail() ?: ""
+    private val _userEmail = MutableStateFlow(sessionManager.getUserEmail() ?: "")
 
-    val cartItems: StateFlow<List<com.app.shoppy.model.CartItem>> = repository.getCartItemsFlow(userEmail)
+    fun isLoggedIn(): Boolean = sessionManager.isLoggedIn()
+
+    fun refreshSession() {
+        _userEmail.value = sessionManager.getUserEmail() ?: ""
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val cartItems: StateFlow<List<com.app.shoppy.model.CartItem>> = _userEmail
+        .flatMapLatest { email ->
+            repository.getCartItemsFlow(email)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -27,9 +41,11 @@ class CartViewModel @Inject constructor(
         )
 
     fun addToCart(productId: Long, size: String, quantity: Int, price: Double) {
-        if (userEmail.isNotEmpty()) {
+        val email = sessionManager.getUserEmail() ?: ""
+        _userEmail.value = email // Update state flow dynamically
+        if (email.isNotEmpty()) {
             viewModelScope.launch {
-                repository.addToCart(productId, userEmail, size, quantity, price)
+                repository.addToCart(productId, email, size, quantity, price)
             }
         }
     }

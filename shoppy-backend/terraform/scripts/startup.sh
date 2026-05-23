@@ -20,8 +20,10 @@ DB_USER=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/DB_USER")
 DB_PASSWORD=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/DB_PASSWORD")
 DB_NAME=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/DB_NAME")
 REPO_URL=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/REPO_URL")
+GITHUB_TOKEN=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/GITHUB_TOKEN")
+GITHUB_BRANCH=$(curl -sf -H "$METADATA_HEADER" "$METADATA_URL/GITHUB_BRANCH")
 
-echo "Config loaded: DB=$DB_NAME, REPO=$REPO_URL"
+echo "Config loaded: DB=$DB_NAME, REPO=$REPO_URL, BRANCH=$GITHUB_BRANCH"
 
 # ── System update ─────────────────────────────────────────
 echo "[1/6] Updating system packages..."
@@ -58,7 +60,21 @@ echo "Docker version: $(docker --version)"
 echo "[3/6] Cloning repository..."
 APP_DIR="/opt/shoppy"
 rm -rf "$APP_DIR"
-git clone "$REPO_URL" "$APP_DIR"
+
+# Handle private repository authentication if GITHUB_TOKEN is provided
+if [ -n "$GITHUB_TOKEN" ]; then
+  CLONE_URL=$(echo "$REPO_URL" | sed "s|https://|https://${GITHUB_TOKEN}@|")
+else
+  CLONE_URL="$REPO_URL"
+fi
+
+# Clone specific branch if specified
+if [ -n "$GITHUB_BRANCH" ]; then
+  git clone -b "$GITHUB_BRANCH" "$CLONE_URL" "$APP_DIR"
+else
+  git clone "$CLONE_URL" "$APP_DIR"
+fi
+
 cd "$APP_DIR/shoppy-backend"
 
 # ── Start PostgreSQL via Docker ───────────────────────────

@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "shoppy"
-include(":app")
+include(":shoppy-mobile")

@@ -49,6 +49,11 @@ class WishlistFragment : Fragment() {
                 startActivity(intent)
             },
             onQuickAddClick = { product ->
+                if (!cartViewModel.isLoggedIn()) {
+                    Toast.makeText(context, "Please sign in to add items to your cart", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), LoginActivity::class.java))
+                    return@ProductAdapter
+                }
                 val sizesArray = product.sizes.split(",").map { it.trim() }.toTypedArray()
                 if (sizesArray.isEmpty() || sizesArray[0].isEmpty()) {
                     cartViewModel.addToCart(product.id.toLong(), "One Size", 1, product.price)
@@ -66,6 +71,11 @@ class WishlistFragment : Fragment() {
                 }
             },
             onFavoriteClick = { product ->
+                if (!productViewModel.isLoggedIn()) {
+                    Toast.makeText(context, "Please sign in to add items to your wishlist", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), LoginActivity::class.java))
+                    return@ProductAdapter
+                }
                 productViewModel.toggleWishlist(product.id.toLong())
             }
         )

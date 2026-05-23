@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @HiltViewModel
 class SharedProductViewModel @Inject constructor(
@@ -24,9 +25,19 @@ class SharedProductViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val userEmail = sessionManager.getUserEmail() ?: ""
+    private val _userEmail = MutableStateFlow(sessionManager.getUserEmail() ?: "")
 
-    val favoriteProductIds: StateFlow<Set<Long>> = repository.getWishlistItemsFlow(userEmail)
+    fun isLoggedIn(): Boolean = sessionManager.isLoggedIn()
+
+    fun refreshSession() {
+        _userEmail.value = sessionManager.getUserEmail() ?: ""
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val favoriteProductIds: StateFlow<Set<Long>> = _userEmail
+        .flatMapLatest { email ->
+            repository.getWishlistItemsFlow(email)
+        }
         .map { list -> list.map { it.productId }.toSet() }
         .stateIn(
             scope = viewModelScope,
@@ -50,20 +61,62 @@ class SharedProductViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    private val _pagedProducts = MutableStateFlow<List<ProductEntity>>(emptyList())
+    val pagedProducts: StateFlow<List<ProductEntity>> = _pagedProducts.asStateFlow()
+
+    private var currentPage = 0
+    private val pageSize = 6
+    private var isLastPage = false
+    private var isLoadingPage = false
+
+    fun loadNextPage() {
+        if (isLoadingPage || isLastPage) return
+        isLoadingPage = true
+        viewModelScope.launch {
+            try {
+                val offset = currentPage * pageSize
+                val newItems = repository.getPagedProducts(pageSize, offset)
+                if (newItems.isEmpty()) {
+                    isLastPage = true
+                } else {
+                    _pagedProducts.value = _pagedProducts.value + newItems
+                    currentPage++
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                isLoadingPage = false
+            }
+        }
+    }
+
+    fun resetPagination() {
+        currentPage = 0
+        isLastPage = false
+        _pagedProducts.value = emptyList()
+        loadNextPage()
+    }
+
     init {
         fetchProducts()
     }
 
     private fun fetchProducts() {
+        // Load initial offline cached data instantly
+        resetPagination()
         viewModelScope.launch {
             repository.refreshProducts()
+            // Reload after refresh to show any new changes
+            resetPagination()
         }
     }
 
     fun toggleWishlist(productId: Long) {
-        if (userEmail.isNotEmpty()) {
+        val email = sessionManager.getUserEmail() ?: ""
+        _userEmail.value = email // Update state flow dynamically
+        if (email.isNotEmpty()) {
             viewModelScope.launch {
-                repository.toggleWishlist(productId, userEmail)
+                repository.toggleWishlist(productId, email)
             }
         }
     }

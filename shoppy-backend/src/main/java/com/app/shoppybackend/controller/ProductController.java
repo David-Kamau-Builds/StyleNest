@@ -15,7 +15,12 @@ public class ProductController {
     private ProductRepository productRepository;
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (page != null && size != null) {
+            return productRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size)).getContent();
+        }
         return productRepository.findAll();
     }
     

@@ -81,6 +81,11 @@ class ProductDetailActivity : AppCompatActivity() {
                 }
 
                 binding.btnFavoriteDetail.setOnClickListener {
+                    if (!productViewModel.isLoggedIn()) {
+                        Toast.makeText(this@ProductDetailActivity, "Please sign in to add items to your wishlist", Toast.LENGTH_SHORT).show()
+                        startActivity(android.content.Intent(this@ProductDetailActivity, LoginActivity::class.java))
+                        return@setOnClickListener
+                    }
                     productViewModel.toggleWishlist(product.id.toLong())
                 }
 
@@ -115,6 +120,11 @@ class ProductDetailActivity : AppCompatActivity() {
                 }
 
                 binding.btnAddToCart.setOnClickListener {
+                    if (!cartViewModel.isLoggedIn()) {
+                        Toast.makeText(this@ProductDetailActivity, "Please sign in to add items to your cart", Toast.LENGTH_SHORT).show()
+                        startActivity(android.content.Intent(this@ProductDetailActivity, LoginActivity::class.java))
+                        return@setOnClickListener
+                    }
                     if (selectedSize == null) {
                         Toast.makeText(this@ProductDetailActivity, "Please select a size first", Toast.LENGTH_SHORT).show()
                     } else {

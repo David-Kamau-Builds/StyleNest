@@ -83,10 +83,12 @@ resource "google_compute_instance" "shoppy_vm" {
 
   # Pass config as instance metadata (read in startup script)
   metadata = {
-    DB_USER     = var.db_user
-    DB_PASSWORD = var.db_password
-    DB_NAME     = var.db_name
-    REPO_URL    = var.repo_url
+    DB_USER       = var.db_user
+    DB_PASSWORD   = var.db_password
+    DB_NAME       = var.db_name
+    REPO_URL      = var.repo_url
+    GITHUB_TOKEN  = var.github_token
+    GITHUB_BRANCH = var.github_branch
 
     # Startup script runs once when the VM first boots
     startup-script = file("${path.module}/scripts/startup.sh")
