@@ -3,8 +3,8 @@
     <!-- Brand Colors -->
     <color name="black">#121212</color>
     <color name="matte_grey">#1A1A1A</color>
-    <color name="gold">#D4AF37</color>
-    <color name="gold_light">#E5C158</color>
+    <color name="gold">#A67C00</color> <!-- Accessible Dark Gold for Light Mode -->
+    <color name="gold_light">#C69B00</color>
     <color name="white">#FFFFFF</color>
     <color name="off_white">#F8F9FA</color>
     <color name="text_dark">#E0E0E0</color>

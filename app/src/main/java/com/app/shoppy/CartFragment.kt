@@ -57,6 +57,7 @@ class CartFragment : Fragment() {
                 db?.update("cart", values, "id = ?", arrayOf(item.id.toString()))
             }
             loadCartData() // Reload UI seamlessly
+            (activity as? MainActivity)?.updateBadges()
         }
         binding.rvCartItems.layoutManager = LinearLayoutManager(context)
         binding.rvCartItems.adapter = cartAdapter
@@ -79,8 +80,8 @@ class CartFragment : Fragment() {
             for (item in cartItems) {
                 total += (item.price * item.quantity)
             }
-            binding.tvSubtotal.text = "KSh $total"
-            binding.tvTotal.text = "KSh $total"
+            binding.tvSubtotal.text = String.format("KSh %.2f", total)
+            binding.tvTotal.text = String.format("KSh %.2f", total)
         }
     }
 

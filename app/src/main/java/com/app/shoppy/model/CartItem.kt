@@ -1,11 +1,11 @@
 package com.app.shoppy.model
 
 data class CartItem(
-    val id: Int = 0,
+    val id: Int,
     val productId: Int,
+    val productName: String,
     val selectedSize: String,
-    var quantity: Int,
-    val productName: String = "",
-    val price: Double = 0.0,
-    val imageName: String = ""
+    val quantity: Int,
+    val price: Double,
+    val productImageUrl: String
 )

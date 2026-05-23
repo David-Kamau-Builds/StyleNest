@@ -1,12 +1,14 @@
 package com.app.shoppy.model
 
 data class Product(
-    val id: Int = 0,
+    val id: Int,
     val name: String,
-    val category: String,
-    val price: Double,
-    val imageName: String,
     val description: String,
+    val richDescription: String,
+    val category: String,
+    val subCategory: String,
     val sizes: String,
-    val isFeatured: Boolean = false
+    val price: Double,
+    val imageUrl: String,
+    val images: String // Comma-separated list for slideshow
 )

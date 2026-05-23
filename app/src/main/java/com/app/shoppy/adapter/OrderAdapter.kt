@@ -20,7 +20,7 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
         with(holder.binding) {
             tvOrderNumber.text = order.orderNumber
             tvOrderDate.text = order.orderDate
-            tvOrderTotal.text = "KSh ${order.totalAmount}"
+            tvOrderTotal.text = String.format("KSh %.2f", order.totalAmount)
             tvOrderStatus.text = order.status
         }
     }

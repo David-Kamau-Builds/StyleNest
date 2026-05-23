@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Colors (Dark Mode Overrides) -->
+    <color name="gold">#D4AF37</color> <!-- Original Vibrant Gold -->
+    <color name="gold_light">#E5C158</color>
+</resources>

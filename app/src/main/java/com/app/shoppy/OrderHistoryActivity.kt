@@ -20,15 +20,26 @@ class OrderHistoryActivity : AppCompatActivity() {
         
         dbHelper = DatabaseHelper(this)
 
+        val sharedPrefs = getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
+        if (!sharedPrefs.getBoolean("is_logged_in", false)) {
+            android.widget.Toast.makeText(this, "Please sign in to view order history", android.widget.Toast.LENGTH_SHORT).show()
+            startActivity(android.content.Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         binding.btnBack.setOnClickListener { finish() }
 
         loadOrders()
     }
 
     private fun loadOrders() {
+        val sharedPrefs = getSharedPreferences("shoppy_prefs", android.content.Context.MODE_PRIVATE)
+        val email = sharedPrefs.getString("user_email", "") ?: ""
+        
         val ordersList = mutableListOf<Order>()
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT id, order_number, total_amount, order_date, status FROM orders ORDER BY id DESC", null)
+        val cursor = db.rawQuery("SELECT id, order_number, total_amount, order_date, status FROM orders WHERE user_email = ? ORDER BY id DESC", arrayOf(email))
         
         if (cursor.moveToFirst()) {
             do {

@@ -73,14 +73,30 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Filters"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Filters"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:layout_centerVertical="true" />
+
+                <ImageView
+                    android:id="@+id/btnCloseDrawer"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    app:tint="?android:attr/textColorPrimary" />
+            </RelativeLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -88,15 +104,63 @@
                 android:text="Select a category"
                 android:textSize="16sp"
                 android:textColor="?android:attr/textColorSecondary"
-                android:layout_marginBottom="24dp"/>
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
 
-            <!-- Filters list inside Drawer -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategoryList"
+            <!-- ExpandableListView must NEVER be inside a ScrollView -->
+            <ExpandableListView
+                android:id="@+id/expandableCategoryList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:groupIndicator="@null"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="0dp"
+                android:childDivider="@android:color/transparent" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_category" />
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Price Range"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvPriceRange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="KSh 0 - KSh 10000"
+                    android:textColor="@color/gold"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <com.google.android.material.slider.RangeSlider
+                    android:id="@+id/priceSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="0.0"
+                    android:valueTo="10000.0"
+                    app:thumbColor="@color/gold"
+                    app:trackColorActive="@color/gold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClearFilters"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:text="CLEAR ALL FILTERS"
+                    android:textColor="@color/gold"
+                    app:strokeColor="@color/gold"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
 
         </LinearLayout>
     </com.google.android.material.navigation.NavigationView>

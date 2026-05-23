@@ -3,6 +3,7 @@ package com.app.shoppy.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.app.shoppy.databinding.ItemCartBinding
 import com.app.shoppy.model.CartItem
 
@@ -23,14 +24,14 @@ class CartAdapter(
         with(holder.binding) {
             cartItemName.text = item.productName
             cartItemSize.text = "Size: ${item.selectedSize}"
-            cartItemPrice.text = "KSh ${item.price}"
+            cartItemPrice.text = String.format("KSh %.2f", item.price)
             cartItemQuantity.text = item.quantity.toString()
 
-            val context = root.context
-            val resourceId = context.resources.getIdentifier(item.imageName, "mipmap", context.packageName)
-            if(resourceId != 0) {
-                cartItemImage.setImageResource(resourceId)
-            }
+            Glide.with(root.context)
+                .load(item.productImageUrl)
+                .centerCrop()
+                .placeholder(com.app.shoppy.utils.UIUtils.getShimmerDrawable())
+                .into(cartItemImage)
 
             btnIncrease.setOnClickListener {
                 onQuantityChange(item, item.quantity + 1)
@@ -42,6 +43,12 @@ class CartAdapter(
                 } else {
                     onQuantityChange(item, 0) // Treat 0 as remove item
                 }
+            }
+
+            root.setOnClickListener {
+                val intent = android.content.Intent(root.context, com.app.shoppy.ProductDetailActivity::class.java)
+                intent.putExtra("PRODUCT_ID", item.productId)
+                root.context.startActivity(intent)
             }
         }
     }
