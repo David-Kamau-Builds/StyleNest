@@ -1,0 +1,74 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'shoppy-backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'shoppy-backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  build-and-test:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: shoppy_db
+          POSTGRES_USER: shoppy_user
+          POSTGRES_PASSWORD: shoppy_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build and Run Tests
+        working-directory: shoppy-backend
+        run: |
+          ./mvnw clean test
+
+  terraform-lint-validate:
+    name: Terraform Lint & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Check Formatting
+        working-directory: shoppy-backend/terraform
+        run: terraform fmt -check
+
+      - name: Initialize Terraform
+        working-directory: shoppy-backend/terraform
+        run: terraform init -backend=false
+
+      - name: Validate Configuration
+        working-directory: shoppy-backend/terraform
+        run: terraform validate
