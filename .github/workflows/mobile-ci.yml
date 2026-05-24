@@ -2,7 +2,6 @@ name: Mobile CI
 
 on:
   push:
-    branches: [ "main" ]
     paths:
       - 'shoppy-mobile/**'
       - 'gradle/**'
@@ -11,7 +10,6 @@ on:
       - 'gradlew'
       - '.github/workflows/mobile-ci.yml'
   pull_request:
-    branches: [ "main" ]
     paths:
       - 'shoppy-mobile/**'
       - 'gradle/**'

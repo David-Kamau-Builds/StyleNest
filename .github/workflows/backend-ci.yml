@@ -2,12 +2,10 @@ name: Backend CI
 
 on:
   push:
-    branches: [ "main" ]
     paths:
       - 'shoppy-backend/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [ "main" ]
     paths:
       - 'shoppy-backend/**'
       - '.github/workflows/backend-ci.yml'
