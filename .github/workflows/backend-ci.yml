@@ -41,6 +41,10 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      - name: Grant Execute Permission to mvnw
+        working-directory: shoppy-backend
+        run: chmod +x mvnw
+
       - name: Build and Run Tests
         working-directory: shoppy-backend
         run: |

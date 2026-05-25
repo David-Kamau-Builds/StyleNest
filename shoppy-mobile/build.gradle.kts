@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+}
+
+// Load local.properties (gitignored – written by Terraform or set manually)
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
 }
 
 android {
@@ -26,10 +34,20 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"http://34.121.48.4:8080/api/v1/\"")
+            // Reads BASE_URL from local.properties; falls back to the hardcoded IP if missing
+            val releaseBaseUrl = localProperties.getProperty(
+                "BASE_URL",
+                "http://34.121.48.4:8080/api/v1/"
+            )
+            buildConfigField("String", "BASE_URL", "\"$releaseBaseUrl\"")
         }
         getByName("debug") {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/v1/\"")
+            // For debug, prefer local.properties but fall back to the emulator loopback
+            val debugBaseUrl = localProperties.getProperty(
+                "BASE_URL",
+                "http://10.0.2.2:8080/api/v1/"
+            )
+            buildConfigField("String", "BASE_URL", "\"$debugBaseUrl\"")
         }
     }
     compileOptions {

@@ -21,3 +21,8 @@ output "vm_name" {
   description = "Name of the Compute Engine instance"
   value       = google_compute_instance.shoppy_vm.name
 }
+
+output "local_properties_updated" {
+  description = "Confirms that BASE_URL was written to Android local.properties"
+  value       = "local.properties updated → BASE_URL=http://${google_compute_address.shoppy_ip.address}:8080/api/v1/"
+}
