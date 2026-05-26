@@ -14,13 +14,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = BuildConfig.BASE_URL
-
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
