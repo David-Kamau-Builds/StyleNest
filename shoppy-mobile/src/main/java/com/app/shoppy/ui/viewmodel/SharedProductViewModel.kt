@@ -8,6 +8,7 @@ import com.app.shoppy.data.remote.ShoppyApiService
 import com.app.shoppy.data.remote.model.ProductDto
 import com.app.shoppy.data.repository.ShoppyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

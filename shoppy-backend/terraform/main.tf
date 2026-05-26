@@ -93,9 +93,9 @@ resource "google_compute_instance" "shoppy_vm" {
 # the next Gradle build picks up the correct server IP without any
 # manual edits. local.properties is gitignored, so it's safe to store
 # the IP here.
-local "android_sdk_dir" {
+locals {
   # Read the existing sdk.dir line so we don't clobber it
-  value = try(
+  android_sdk_dir = try(
     trimspace(regex("sdk\\.dir=([^\n]+)", file("${path.module}/../../local.properties"))[0]),
     ""
   )
