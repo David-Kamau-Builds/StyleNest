@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -6,9 +6,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.app.shoppy.data.StyleNestRepository
-import com.app.shoppy.databinding.ActivityProductDetailBinding
-import com.app.shoppy.model.Product
+import com.app.stylenest.data.StyleNestRepository
+import com.app.stylenest.databinding.ActivityProductDetailBinding
+import com.app.stylenest.model.Product
 import com.google.android.material.chip.Chip
 
 class ProductDetailActivity : AppCompatActivity() {

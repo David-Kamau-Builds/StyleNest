@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.ContentValues
 import android.content.Intent
@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.app.shoppy.adapter.CartAdapter
-import com.app.shoppy.data.DatabaseHelper
-import com.app.shoppy.data.StyleNestRepository
-import com.app.shoppy.databinding.FragmentCartBinding
+import com.app.stylenest.adapter.CartAdapter
+import com.app.stylenest.data.DatabaseHelper
+import com.app.stylenest.data.StyleNestRepository
+import com.app.stylenest.databinding.FragmentCartBinding
 
 class CartFragment : Fragment() {
     private var _binding: FragmentCartBinding? = null

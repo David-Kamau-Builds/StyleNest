@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.animation.AlphaAnimation
 import androidx.appcompat.app.AppCompatActivity
-import com.app.shoppy.databinding.ActivitySplashBinding
+import com.app.stylenest.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
 

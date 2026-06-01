@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,17 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.app.shoppy.adapter.CategoryAdapter
-import com.app.shoppy.adapter.ProductAdapter
-import com.app.shoppy.data.StyleNestRepository
-import com.app.shoppy.databinding.FragmentCategoriesBinding
+import com.app.stylenest.adapter.CategoryAdapter
+import com.app.stylenest.adapter.ProductAdapter
+import com.app.stylenest.data.StyleNestRepository
+import com.app.stylenest.databinding.FragmentHomeBinding
 
-class CategoriesFragment : Fragment() {
-    private var _binding: FragmentCategoriesBinding? = null
+class HomeFragment : Fragment() {
+    private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var repository: StyleNestRepository
@@ -26,7 +25,7 @@ class CategoriesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCategoriesBinding.inflate(inflater, container, false)
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -34,37 +33,27 @@ class CategoriesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         repository = StyleNestRepository(requireContext())
-        
-        setupDrawer()
         setupCategories()
         setupProducts()
-    }
-
-    private fun setupDrawer() {
-        binding.btnMenu.setOnClickListener {
-            binding.drawerLayout.openDrawer(GravityCompat.START)
-        }
     }
 
     private fun setupCategories() {
         val categories = listOf("All", "Shirts", "Trousers", "Dresses", "Shoes", "Accessories")
         val categoryAdapter = CategoryAdapter(categories) { selectedCategory ->
-            binding.tvCategoriesTitle.text = selectedCategory
             if (selectedCategory == "All") {
-                productAdapter.updateData(repository.getAllProducts())
+                productAdapter.updateData(repository.getFeaturedProducts())
             } else {
                 productAdapter.updateData(repository.getProductsByCategory(selectedCategory))
             }
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
-        
-        binding.rvCategoryList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        binding.rvCategoryList.adapter = categoryAdapter
+        binding.rvCategories.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        binding.rvCategories.adapter = categoryAdapter
     }
 
     private fun setupProducts() {
+        val initialProducts = repository.getFeaturedProducts()
         productAdapter = ProductAdapter(
-            products = repository.getAllProducts(),
+            products = initialProducts,
             onProductClick = { product ->
                 val intent = Intent(requireContext(), ProductDetailActivity::class.java)
                 intent.putExtra("PRODUCT_ID", product.id)
@@ -76,8 +65,8 @@ class CategoriesFragment : Fragment() {
                 Toast.makeText(context, "${product.name} added to cart!", Toast.LENGTH_SHORT).show()
             }
         )
-        binding.rvCategoryProducts.layoutManager = GridLayoutManager(context, 2)
-        binding.rvCategoryProducts.adapter = productAdapter
+        binding.rvProducts.layoutManager = GridLayoutManager(context, 2)
+        binding.rvProducts.adapter = productAdapter
     }
 
     override fun onDestroyView() {

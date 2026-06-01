@@ -1,12 +1,12 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.app.shoppy.adapter.OrderAdapter
-import com.app.shoppy.data.DatabaseHelper
-import com.app.shoppy.databinding.ActivityOrderHistoryBinding
-import com.app.shoppy.model.Order
+import com.app.stylenest.adapter.OrderAdapter
+import com.app.stylenest.data.DatabaseHelper
+import com.app.stylenest.databinding.ActivityOrderHistoryBinding
+import com.app.stylenest.model.Order
 
 class OrderHistoryActivity : AppCompatActivity() {
 

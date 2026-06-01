@@ -1,10 +1,10 @@
-package com.app.shoppy.adapter
+package com.app.stylenest.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.app.shoppy.databinding.ItemOrderBinding
-import com.app.shoppy.model.Order
+import com.app.stylenest.databinding.ItemOrderBinding
+import com.app.stylenest.model.Order
 
 class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 

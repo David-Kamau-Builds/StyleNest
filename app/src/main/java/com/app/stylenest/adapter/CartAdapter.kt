@@ -1,10 +1,10 @@
-package com.app.shoppy.adapter
+package com.app.stylenest.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.app.shoppy.databinding.ItemCartBinding
-import com.app.shoppy.model.CartItem
+import com.app.stylenest.databinding.ItemCartBinding
+import com.app.stylenest.model.CartItem
 
 class CartAdapter(
     private var cartItems: List<CartItem>,

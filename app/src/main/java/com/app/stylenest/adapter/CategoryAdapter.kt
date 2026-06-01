@@ -1,10 +1,10 @@
-package com.app.shoppy.adapter
+package com.app.stylenest.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.app.shoppy.databinding.ItemCategoryBinding
+import com.app.stylenest.databinding.ItemCategoryBinding
 
 class CategoryAdapter(
     private val categories: List<String>,

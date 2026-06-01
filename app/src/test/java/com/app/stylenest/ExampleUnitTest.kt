@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import org.junit.Test
 

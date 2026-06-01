@@ -1,10 +1,10 @@
-package com.app.shoppy.adapter
+package com.app.stylenest.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.app.shoppy.databinding.ItemProductBinding
-import com.app.shoppy.model.Product
+import com.app.stylenest.databinding.ItemProductBinding
+import com.app.stylenest.model.Product
 
 class ProductAdapter(
     private var products: List<Product>,

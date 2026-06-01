@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme (Light). -->
-    <style name="Theme.Shoppy" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Theme.Stylenest" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/gold</item>
         <item name="colorOnPrimary">@color/white</item>

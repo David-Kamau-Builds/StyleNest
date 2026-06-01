@@ -1,9 +1,9 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.app.shoppy.databinding.ActivityMainBinding
+import com.app.stylenest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

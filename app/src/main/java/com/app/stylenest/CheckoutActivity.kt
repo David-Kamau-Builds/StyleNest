@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.ContentValues
 import android.content.Intent
@@ -6,9 +6,9 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.app.shoppy.data.DatabaseHelper
-import com.app.shoppy.data.StyleNestRepository
-import com.app.shoppy.databinding.ActivityCheckoutBinding
+import com.app.stylenest.data.DatabaseHelper
+import com.app.stylenest.data.StyleNestRepository
+import com.app.stylenest.databinding.ActivityCheckoutBinding
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

@@ -1,4 +1,4 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.app.shoppy.databinding.FragmentProfileBinding
+import com.app.stylenest.databinding.FragmentProfileBinding
 
 class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null

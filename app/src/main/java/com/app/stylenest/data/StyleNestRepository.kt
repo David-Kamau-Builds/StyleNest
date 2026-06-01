@@ -1,9 +1,9 @@
-package com.app.shoppy.data
+package com.app.stylenest.data
 
 import android.content.ContentValues
 import android.content.Context
-import com.app.shoppy.model.CartItem
-import com.app.shoppy.model.Product
+import com.app.stylenest.model.CartItem
+import com.app.stylenest.model.Product
 
 class StyleNestRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)

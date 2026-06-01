@@ -1,9 +1,9 @@
-package com.app.shoppy
+package com.app.stylenest
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.app.shoppy.databinding.ActivityOrderSuccessBinding
+import com.app.stylenest.databinding.ActivityOrderSuccessBinding
 
 class OrderSuccessActivity : AppCompatActivity() {
 

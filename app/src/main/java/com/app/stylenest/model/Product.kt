@@ -1,4 +1,4 @@
-package com.app.shoppy.model
+package com.app.stylenest.model
 
 data class Product(
     val id: Int = 0,
