@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.app.shoppy"
+    namespace = "com.app.stylenest"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.app.shoppy"
+        applicationId = "com.app.stylenest"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

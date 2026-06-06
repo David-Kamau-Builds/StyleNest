@@ -18,8 +18,8 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginTop="64dp"
-            android:src="@android:drawable/sym_def_app_icon"
-            app:tint="@color/gold"
+            android:src="@drawable/ic_logo_foreground"
+            app:tint="?attr/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

@@ -23,14 +23,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Floating Favorite Heart -->
         <ImageView
             android:id="@+id/ivFavorite"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:padding="8dp"
             android:src="@drawable/ic_heart"
-            app:tint="@color/matte_grey"
+            app:tint="?attr/colorOnSurface"
             android:background="@drawable/circle_bg"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

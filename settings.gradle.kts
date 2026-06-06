@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "shoppy"
+rootProject.name = "StyleNest"
 include(":app")

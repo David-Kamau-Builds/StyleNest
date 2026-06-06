@@ -7,7 +7,7 @@
     android:layout_marginBottom="12dp"
     app:cardCornerRadius="24dp"
     app:cardElevation="0dp"
-    app:cardBackgroundColor="@color/matte_grey">
+    app:cardBackgroundColor="?attr/colorSecondaryContainer">
 
     <TextView
         android:id="@+id/categoryName"
@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:textStyle="bold"
         android:textSize="14sp" />
 

@@ -13,12 +13,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Shoppy">
+        android:theme="@style/Theme.StyleNest">
         
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.Shoppy">
+            android:theme="@style/Theme.StyleNest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,36 +28,36 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
 
         <activity
             android:name=".ProductDetailActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
 
         <activity
             android:name=".CheckoutActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
 
         <activity
             android:name=".OrderSuccessActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
 
         <activity
             android:name=".LoginActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
             
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
         <activity
             android:name=".OrderHistoryActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shoppy" />
+            android:theme="@style/Theme.StyleNest" />
 
     </application>
 
