@@ -9,8 +9,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "stylenest.db"
-        // v7: Refreshed all product names, prices, and images with realistic data
-        private const val DATABASE_VERSION = 7
+        // v9: Seeded default user Lucy Njeri
+        private const val DATABASE_VERSION = 9
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -85,6 +85,18 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         """)
 
         seed100Products(db)
+        seedDefaultUser(db)
+    }
+
+    private fun seedDefaultUser(db: SQLiteDatabase) {
+        val values = ContentValues().apply {
+            put("name", "Lucy Njeri")
+            put("email", "njeri@stylenest.co.ke")
+            put("password", "njeri123")
+            put("avatar_url", "")
+            put("two_factor_enabled", 0)
+        }
+        db.insert("users", null, values)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -427,15 +439,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             )
         )
 
-        // Insert every product — images are keyword-matched via loremflickr.com
-        // ?lock=N is deterministic: same N always returns the same photo
+        // Insert every product using local WebP assets
         var id = 1
         for (sub in catalog) {
             for ((name, price) in sub.products) {
-                val kw  = sub.imageKeyword
-                val img1 = "https://loremflickr.com/500/700/$kw/all?lock=${id}0"
-                val img2 = "https://loremflickr.com/500/700/$kw/all?lock=${id}1"
-                val img3 = "https://loremflickr.com/500/700/$kw/all?lock=${id}2"
+                val img1 = "file:///android_asset/images/product_${id}_1.webp"
+                val img2 = "file:///android_asset/images/product_${id}_2.webp"
+                val img3 = "file:///android_asset/images/product_${id}_3.webp"
                 val values = ContentValues().apply {
                     put("name", name)
                     put("description", sub.shortDesc)

@@ -106,6 +106,7 @@
             android:layout_marginTop="32dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@+id/btnSignIn">
 
             <View
@@ -139,6 +140,7 @@
             android:text="Google"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="16sp"
+            android:visibility="gone"
             app:icon="@drawable/ic_google"
             app:iconTint="@null"
             app:iconGravity="textStart"

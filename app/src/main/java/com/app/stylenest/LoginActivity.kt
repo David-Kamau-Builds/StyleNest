@@ -21,13 +21,13 @@ import java.util.concurrent.Executor
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-    private lateinit var googleSignInClient: GoogleSignInClient
+    // private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var dbHelper: DatabaseHelper
 
-    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        handleSignInResult(task)
-    }
+    // private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    //     val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+    //     handleSignInResult(task)
+    // }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,18 +37,18 @@ class LoginActivity : AppCompatActivity() {
         dbHelper = DatabaseHelper(this)
 
         // Configure Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestProfile()
-            .requestIdToken("819759054088-h1tdj0ua79fnk4mljv4nm34gk1n4ea2b.apps.googleusercontent.com")
-            .build()
-            
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        // val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        //     .requestEmail()
+        //     .requestProfile()
+        //     .requestIdToken("819759054088-h1tdj0ua79fnk4mljv4nm34gk1n4ea2b.apps.googleusercontent.com")
+        //     .build()
+        //     
+        // googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        binding.btnGoogleSignIn.setOnClickListener {
-            val signInIntent = googleSignInClient.signInIntent
-            signInLauncher.launch(signInIntent)
-        }
+        // binding.btnGoogleSignIn.setOnClickListener {
+        //     val signInIntent = googleSignInClient.signInIntent
+        //     signInLauncher.launch(signInIntent)
+        // }
 
         binding.btnSignIn.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
@@ -126,6 +126,7 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    /*
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
@@ -189,4 +190,5 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this, "Google sign in failed (code: ${e.statusCode})", Toast.LENGTH_SHORT).show()
         }
     }
+    */
 }

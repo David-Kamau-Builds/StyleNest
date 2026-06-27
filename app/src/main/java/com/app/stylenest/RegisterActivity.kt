@@ -19,13 +19,13 @@ import com.google.android.gms.tasks.Task
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var googleSignInClient: GoogleSignInClient
+    // private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var dbHelper: DatabaseHelper
 
-    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        handleSignInResult(task)
-    }
+    // private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    //     val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+    //     handleSignInResult(task)
+    // }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,18 +34,18 @@ class RegisterActivity : AppCompatActivity() {
 
         dbHelper = DatabaseHelper(this)
 
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestProfile()
-            .requestIdToken("819759054088-h1tdj0ua79fnk4mljv4nm34gk1n4ea2b.apps.googleusercontent.com")
-            .build()
-            
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        // val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        //     .requestEmail()
+        //     .requestProfile()
+        //     .requestIdToken("819759054088-h1tdj0ua79fnk4mljv4nm34gk1n4ea2b.apps.googleusercontent.com")
+        //     .build()
+        //     
+        // googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        binding.btnGoogleSignUp.setOnClickListener {
-            val signInIntent = googleSignInClient.signInIntent
-            signInLauncher.launch(signInIntent)
-        }
+        // binding.btnGoogleSignUp.setOnClickListener {
+        //     val signInIntent = googleSignInClient.signInIntent
+        //     signInLauncher.launch(signInIntent)
+        // }
 
         binding.tvSignInLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -111,6 +111,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    /*
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
@@ -133,4 +134,5 @@ class RegisterActivity : AppCompatActivity() {
             apply()
         }
     }
+    */
 }
